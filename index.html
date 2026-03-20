@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detention Saver - Attendance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a26;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #7c3aed;
+            --warning-red: #ef4444;
+            --warning-yellow: #f59e0b;
+            --success-green: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #2d2d44;
+            --glow-primary: rgba(0, 212, 170, 0.3);
+            --glow-secondary: rgba(124, 58, 237, 0.3);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 40px;
+            padding: 0 4px;
+            flex-wrap: wrap;
+        }
+
+        /* Navigation and UI enhancements */
+        .navbar {
+            background: rgba(0,0,0,0.08);
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: block;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+        }
+        .nav-container {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .nav-links {
+            list-style: none; display: flex; gap: 18px; padding: 0; margin: 0;
+        }
+        .nav-item { color: var(--text-secondary); cursor: default; }
+        .nav-item:hover { color: var(--text-primary); }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        @media (max-width: 800px) {
+            .nav-links { display: none; }
+        }
+
+        /* Light theme overrides for CSS variables */
+        [data-theme="light"] {
+            --bg-primary: #f6f7fb;
+            --bg-card: #ffffff;
+            --bg-card-hover: #eef2f7;
+            --accent-primary: #2563eb;
+            --accent-secondary: #7c3aed;
+            --warning-red: #dc2626;
+            --warning-yellow: #d97706;
+            --success-green: #10b981;
+            --text-primary: #0f1220;
+            --text-secondary: #374151;
+            --text-muted: #64748b;
+            --border: #e5e7eb;
+            --glow-primary: rgba(37, 99, 235, 0.25);
+            --glow-secondary: rgba(124, 58, 237, 0.25);
+        }
+
+        .header .brand {
+            display: flex;
+            flex-direction: column;
+        }
+        .header .brand h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .brand p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin: 6px 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .control-group {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px var(--glow-primary);
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--glow-primary);
+        }
+
+        .control-group select option {
+            background: var(--bg-card);
+            padding: 10px;
+        }
+
+        .main-display {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .main-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .main-display.positive {
+            border-color: var(--success-green);
+            box-shadow: 0 0 60px rgba(16, 185, 129, 0.2);
+        }
+
+        .main-display.negative {
+            border-color: var(--warning-red);
+            box-shadow: 0 0 60px rgba(239, 68, 68, 0.3);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 80px rgba(239, 68, 68, 0.5); }
+        }
+
+        .bunk-counter {
+            font-size: 8rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .positive .bunk-counter {
+            color: var(--success-green);
+            text-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+        }
+
+        .negative .bunk-counter {
+            color: var(--warning-red);
+            text-shadow: 0 0 40px rgba(239, 68, 68, 0.5);
+        }
+
+        .neutral .bunk-counter {
+            color: var(--text-primary);
+        }
+
+        .bunk-label {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .subject-name {
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-secondary);
+            box-shadow: 0 10px 40px var(--glow-secondary);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value.danger { color: var(--warning-red); }
+        .stat-value.warning { color: var(--warning-yellow); }
+        .stat-value.success { color: var(--success-green); }
+        .stat-value.accent { color: var(--accent-primary); }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .whatif-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .whatif-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .whatif-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--text-primary);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--accent-secondary);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .whatif-content {
+            display: none;
+        }
+
+        .whatif-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .whatif-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .whatif-checkbox:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .whatif-checkbox input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--warning-red);
+            cursor: pointer;
+        }
+
+        .whatif-checkbox span {
+            font-weight: 500;
+        }
+
+        .projection {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .projection-label {
+            color: var(--text-secondary);
+        }
+
+        .projection-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning-red);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .status-badge.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--warning-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning-yellow);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .info-note {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .site-footer {
+            text-align: center;
+            padding: 14px 0;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .bunk-counter {
+                font-size: 5rem;
+            }
+            .main-display {
+                padding: 30px 20px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .day-impact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* New UI: settings and calendar card styling */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body { display: block; }
+
+        .row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .field { display: flex; flex-direction: column; min-width: 240px; flex: 1; }
+        .field label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+        .field input { padding: 10px 12px; border-radius: 8px; border:1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); }
+
+        .btn { background: var(--accent-primary); color: white; border: none; padding: 10px 14px; border-radius: 9px; cursor: pointer; font-weight: 600; transition: transform 0.2s ease, filter 0.2s ease; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
+        .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+
+        .calendar-wrap { padding: 6px 0; }
+        .calendar-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; }
+        .calendar-month { font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 6px 0; }
+        .calendar .dow { font-size: 0.8rem; text-align: center; color: var(--text-muted); }
+        .calendar .day { height: 44px; display:flex; align-items:center; justify-content:center; border-radius:8px; cursor: pointer; border:1px solid transparent; background: var(--bg-card); transition: all 0.2s ease; }
+        .calendar .day:hover { transform: translateY(-1px); background: var(--bg-card-hover); }
+        .calendar .weekend { background: rgba(99, 102, 241, 0.07); color: var(--text-secondary); }
+        .calendar .holiday { background: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.5); color: var(--text-primary); }
+        .calendar .day.notinmonth { visibility: hidden; }
+        .calendar .day.active { outline: 2px solid var(--accent-primary); }
+
+        .legend .dot { width: 10px; height: 10px; display:inline-block; border-radius:50%; margin-right:4px; vertical-align: middle; }
+        .legend .weekend { background: rgba(99,102,241,0.25); }
+        .legend .holiday { background: rgba(239,68,68,0.5); }
+        .legend .day { background: rgba(0,0,0,0.0); }
+
+        @media (max-width: 600px) {
+            .field { min-width: 100%; }
+        }
+
+        .whole-day-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .whole-day-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .whole-day-subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .day-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .day-impact-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .day-impact-card:hover {
+            border-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        .day-impact-card.today {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--glow-primary);
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .today .day-name {
+            color: var(--accent-primary);
+        }
+
+        .day-classes {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            min-height: 36px;
+        }
+
+        .day-class-item {
+            display: inline-block;
+            background: var(--bg-card);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 0.7rem;
+        }
+
+        .day-drop {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--warning-red);
+        }
+
+        .day-drop-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .impact-positive {
+            color: var(--success-green);
+        }
+
+        .impact-negative {
+            color: var(--warning-red);
+        }
+
+        .current-att-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .current-att-badge.safe {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-green);
+        }
+
+        .current-att-badge.danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--warning-red);
+        }
+    </style>
+</head>
+<body>
+        <div class="container">
+            <!-- Settings and Calendar enhancements -->
+            <section class="settings-grid" aria-label="Semester and Holidays settings">
+                <div class="card" id="semesterSettingsCard">
+                    <div class="card-header">Semester Duration</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="field">
+                                <label for="semesterStart">Semester Start Date</label>
+                                <input type="date" id="semesterStart" />
+                            </div>
+                            <div class="field">
+                                <label for="semesterEnd">Semester End Date</label>
+                                <input type="date" id="semesterEnd" />
+                            </div>
+                        </div>
+                        <button class="btn" id="saveSemesterBtn" type="button">Save Semester Dates</button>
+                        <div class="note" id="semesterNote" aria-live="polite" style="margin-top:8px; color:var(--text-muted); font-size:0.9rem;"></div>
+                    </div>
+                </div>
+                <div class="card" id="holidayCalendarCard">
+                    <div class="card-header">Holiday Calendar (Exceptions)</div>
+                    <div class="card-body calendar-wrap" id="calendarContainer" aria-label="Holiday calendar">
+                        <div class="calendar-toolbar">
+                            <button class="btn ghost" id="calendarPrev">Prev</button>
+                            <span id="calendarMonth" class="calendar-month"></span>
+                            <button class="btn ghost" id="calendarNext">Next</button>
+                        </div>
+                        <div class="calendar" id="holidayCalendar" role="grid" aria-label="Holiday calendar grid"></div>
+                        <div class="legend" style="margin-top:8px; font-size:0.85rem; color:var(--text-muted); display:flex; gap:12px; flex-wrap:wrap;">
+                            <span><span class="dot weekend"></span> Weekend</span>
+                            <span><span class="dot holiday"></span> Custom Holiday</span>
+                            <span><span class="dot day"></span> Working Day</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="container nav-container">
+                <div class="brand">
+                    Detention Saver
+                </div>
+                <ul class="nav-links" role="menubar" aria-label="Main sections">
+                    <li role="none" class="nav-item">Overview</li>
+                    <li role="none" class="nav-item">Subjects</li>
+                    <li role="none" class="nav-item">Analytics</li>
+                    <li role="none" class="nav-item">Settings</li>
+                </ul>
+                <div class="nav-actions">
+                    <span class="theme-label" aria-hidden="true" style="margin-right:8px; color:var(--text-secondary); font-size:0.95rem;">Theme</span>
+                    <label class="toggle-switch" aria-label="Toggle color theme" title="Toggle color theme">
+                        <input type="checkbox" id="themeToggle" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Select Subject</label>
+                <select id="subjectSelect">
+                    <option value="">-- Choose a Subject --</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Current Attendance %</label>
+                <input type="number" id="attendanceInput" min="0" max="100" placeholder="e.g., 80">
+            </div>
+            <div class="control-group">
+                <label>Today's Date</label>
+                <input type="date" id="dateInput">
+            </div>
+        </div>
+        
+        
+
+        <div class="main-display neutral" id="mainDisplay">
+            <div class="bunk-counter" id="bunkCounter">--</div>
+            <div class="bunk-label">Safe to Bunk</div>
+            <div class="subject-name" id="subjectName"></div>
+            <div class="status-badge" id="statusBadge" style="display: none;">
+                <span class="status-dot"></span>
+                <span id="statusText"></span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value accent" id="remainingClasses">--</div>
+                <div class="stat-label">Classes Remaining</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="mustAttend75">--</div>
+                <div class="stat-label">Must Attend (75%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="needFor90">--</div>
+                <div class="stat-label">Need for 90%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="currentAttendance">--%</div>
+                <div class="stat-label">Current Attendance</div>
+            </div>
+        </div>
+
+        <div class="whatif-section">
+            <div class="whatif-header">
+                <div class="whatif-title">
+                    <span>🔮</span> What-if Simulator
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="whatifToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="whatif-content" id="whatifContent">
+                <label class="whatif-checkbox">
+                    <input type="checkbox" id="skipTomorrow">
+                    <span>Skip tomorrow's class</span>
+                </label>
+                <div class="projection" id="projection" style="display: none;">
+                    <span class="projection-label">Projected Attendance:</span>
+                    <span class="projection-value" id="projectedAttendance">--%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="whole-day-section">
+            <div class="whole-day-title">
+                <span>📅</span> Whole Day Bunk Impact
+            </div>
+            <div class="whole-day-subtitle">If you bunk an entire day, here's how much attendance drops for each subject</div>
+            <div class="day-impact-grid" id="dayImpactGrid">
+            </div>
+        </div>
+
+        <div class="info-note">
+            <strong>Note:</strong> Semester assumes 15 weeks. Classes counted from timetable grid. 
+            Weekends (Sat-Sun) excluded. Minimum: 75% | Target: 90%
+        </div>
+    </div>
+
+    <script>
+        const SUBJECTS = {
+            'A': 'Advanced Calculus and Complex Analysis',
+            'B': 'Philosophy of Engineering',
+            'C': 'Electronic System and PCB Design',
+            'D': 'Communicative English',
+            'E': 'Chemistry',
+            'F': 'Programming for Problem Solving',
+            'G': 'Biology',
+            'Workshop': 'Basic Civil and Mechanical Workshop',
+            'CDC': 'General Aptitude',
+            'NSS': 'National Service Scheme'
+        };
+
+        const TIMETABLE = {
+            Monday: {
+                1: 'A', 2: 'F', 3: 'C', 4: 'E', 6: 'C', 8: 'F'
+            },
+            Tuesday: {
+                1: 'B', 2: 'A', 3: 'E', 4: 'F', 6: 'E', 9: 'CDC'
+            },
+            Wednesday: {
+                1: 'F', 2: 'E', 3: 'D', 7: 'G', 8: 'NSS'
+            },
+            Thursday: {
+                1: 'C', 2: 'D', 3: 'B', 4: 'A', 
+                6: 'Workshop', 7: 'Workshop', 8: 'Workshop', 9: 'Workshop'
+            },
+            Friday: {
+                1: 'D', 2: 'B', 3: 'A', 4: 'E', 6: 'CDC', 7: 'G'
+            }
+        };
+
+        const DAYS_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        const MIN_THRESHOLD = 0.75;
+        const TARGET_THRESHOLD = 0.90;
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+        // Semester duration stored in localStorage (start/end). Defaults if missing.
+        function parseDateInput(value){ const d = new Date(value); return isNaN(d) ? null : d; }
+        function getSemesterStartDate(){ const v = localStorage.getItem('semester_start'); const d = v ? parseDateInput(v) : null; if (d && !isNaN(d.getTime())) return new Date(d.getFullYear(), d.getMonth(), d.getDate()); return new Date(new Date().getFullYear(), 0, 1); }
+        function getSemesterEndDate(){ const v = localStorage.getItem('semester_end'); const d = v ? parseDateInput(v) : null; if (d && !isNaN(d.getTime())) return new Date(d.getFullYear(), d.getMonth(), d.getDate()); // default: 15 weeks ~ 105 days later
+            const start = getSemesterStartDate(); const end = new Date(start.getTime() + 105 * MS_PER_DAY); return end; }
+        function getSemesterWeeks(){ const start = getSemesterStartDate(); const end = getSemesterEndDate(); const days = Math.floor((end - start) / MS_PER_DAY); const weeks = Math.max(1, Math.floor(days / 7) + 1); return weeks; }
+
+        function getClassesPerSubject() {
+            const counts = {};
+            for (const subject of Object.keys(SUBJECTS)) {
+                counts[subject] = 0;
+            }
+            
+            for (const day of DAYS_ORDER) {
+                const daySchedule = TIMETABLE[day];
+                for (const period in daySchedule) {
+                    const subject = daySchedule[period];
+                    if (counts[subject] !== undefined) {
+                        counts[subject]++;
+                    }
+                }
+            }
+            return counts;
+        }
+
+        function getWeekNumber(date) {
+            const startOfSemester = getSemesterStartDate();
+            const diffTime = date - startOfSemester;
+            const diffWeeks = Math.floor(diffTime / (7 * 24 * 60 * 60 * 1000));
+            return Math.max(1, diffWeeks + 1);
+        }
+
+        function getDayOfWeek(date) {
+            return DAYS_ORDER[date.getDay() - 1];
+        }
+
+        function getTotalClassesForSubject(subject, weekNumber) {
+            const weeklyCount = getClassesPerSubject()[subject] || 0;
+            const completedWeeks = weekNumber - 1;
+            const totalCompletedClasses = completedWeeks * weeklyCount;
+            
+            const today = new Date();
+            const currentDay = getDayOfWeek(today);
+            const dayIndex = DAYS_ORDER.indexOf(currentDay);
+            
+            let currentWeekClasses = 0;
+            if (dayIndex >= 0) {
+                const daySchedule = TIMETABLE[currentDay];
+                for (const period in daySchedule) {
+                    if (daySchedule[period] === subject) {
+                        const periodNum = parseInt(period);
+                        const todayPeriod = today.getHours() > 12 ? 
+                            Math.ceil(today.getHours() / 2) : 1;
+                        if (periodNum <= todayPeriod) {
+                            currentWeekClasses++;
+                        }
+                    }
+                }
+            }
+            
+            return totalCompletedClasses + currentWeekClasses;
+        }
+
+        function getRemainingClasses(subject, weekNumber) {
+            const weeklyCount = getClassesPerSubject()[subject] || 0;
+            const totalWeeks = getSemesterWeeks();
+            const remainingWeeks = totalWeeks - weekNumber + 1;
+            return remainingWeeks * weeklyCount;
+        }
+
+        function calculateAttendance(subject, currentAttendance, date, skipTomorrow = false) {
+            if (!subject || currentAttendance === '') {
+                return null;
+            }
+
+            const attendance = parseFloat(currentAttendance);
+            if (isNaN(attendance) || attendance < 0 || attendance > 100) {
+                return null;
+            }
+
+            const weekNumber = getWeekNumber(date);
+            const classesHeld = getTotalClassesForSubject(subject, weekNumber);
+            const classesRemaining = getRemainingClasses(subject, weekNumber);
+            const totalClassesInSemester = classesHeld + classesRemaining;
+
+            let attendedClasses = (attendance / 100) * classesHeld;
+            
+            if (skipTomorrow) {
+                attendedClasses = Math.max(0, attendedClasses - 1);
+            }
+
+            const requiredFor75 = Math.ceil(totalClassesInSemester * MIN_THRESHOLD);
+            const requiredFor90 = Math.ceil(totalClassesInSemester * TARGET_THRESHOLD);
+
+            const mustAttend75 = Math.max(0, requiredFor75 - Math.floor(attendedClasses));
+            const mustAttend90 = Math.max(0, requiredFor90 - Math.floor(attendedClasses));
+
+            const safeToBunk = classesRemaining - mustAttend75;
+
+            const is90Unreachable = mustAttend90 > classesRemaining;
+            const isBelow75 = attendance < MIN_THRESHOLD * 100 && safeToBunk < 0;
+
+            const projectedAttendance = totalClassesInSemester > 0 
+                ? ((attendedClasses / totalClassesInSemester) * 100).toFixed(1)
+                : 0;
+
+            return {
+                classesRemaining,
+                mustAttend75,
+                mustAttend90,
+                safeToBunk,
+                is90Unreachable,
+                isBelow75,
+                classesHeld,
+                totalClassesInSemester,
+                currentAttendance: attendance,
+                projectedAttendance,
+                isPositive: safeToBunk >= 0,
+                is90Possible: !is90Unreachable
+            };
+        }
+
+        function calculateWholeDayImpact(attendanceData) {
+            const weekNumber = getWeekNumber(new Date());
+            const grid = document.getElementById('dayImpactGrid');
+            grid.innerHTML = '';
+            
+            const today = new Date();
+            const todayDayName = getDayOfWeek(today);
+            
+            DAYS_ORDER.forEach(day => {
+                const daySchedule = TIMETABLE[day];
+                const subjectsOnDay = [];
+                const uniqueSubjects = new Set();
+                
+                for (const period in daySchedule) {
+                    uniqueSubjects.add(daySchedule[period]);
+                }
+                
+                uniqueSubjects.forEach(subject => {
+                    subjectsOnDay.push(subject);
+                });
+                
+                const classesOnDay = Object.keys(daySchedule).length;
+                const totalClassesPerWeek = getClassesPerSubject();
+                
+                const weekNum = getWeekNumber(new Date());
+                const totalClasses = getTotalClassesForSubject('A', weekNum) + getRemainingClasses('A', weekNum);
+                
+                let maxDrop = 0;
+                let worstSubject = '';
+                
+                subjectsOnDay.forEach(subject => {
+                    const weeklyCount = totalClassesPerWeek[subject] || 0;
+                    const totalSemesterClasses = SEMESTER_WEEKS * weeklyCount;
+                    if (totalSemesterClasses > 0) {
+                        const dropPerClass = 100 / totalSemesterClasses;
+                        const classesOnThisDay = Object.values(daySchedule).filter(s => s === subject).length;
+                        const totalDrop = dropPerClass * classesOnThisDay;
+                        if (totalDrop > maxDrop) {
+                            maxDrop = totalDrop;
+                            worstSubject = subject;
+                        }
+                    }
+                });
+                
+                const isToday = day === todayDayName;
+                const impactPercent = (maxDrop * subjectsOnDay.length).toFixed(1);
+                
+                const card = document.createElement('div');
+                card.className = `day-impact-card ${isToday ? 'today' : ''}`;
+                
+                let classesHtml = '';
+                subjectsOnDay.forEach(subj => {
+                    const subjCode = subj;
+                    const dropPerClass = totalClassesPerWeek[subj] > 0 
+                        ? (100 / (SEMESTER_WEEKS * totalClassesPerWeek[subj])).toFixed(2)
+                        : 0;
+                    classesHtml += `<span class="day-class-item">${subjCode} (-${dropPerClass}%)</span>`;
+                });
+                
+                card.innerHTML = `
+                    <div class="day-name">${day}${isToday ? ' (Today)' : ''}</div>
+                    <div class="day-classes">${classesHtml}</div>
+                    <div class="day-drop">-${impactPercent}%</div>
+                    <div class="day-drop-label">Total Drop</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function populateSubjectSelect() {
+            const select = document.getElementById('subjectSelect');
+            for (const [code, name] of Object.entries(SUBJECTS)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${code} - ${name}`;
+                select.appendChild(option);
+            }
+        }
+
+        function setDefaultDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function updateDashboard() {
+            const subject = document.getElementById('subjectSelect').value;
+            const attendance = document.getElementById('attendanceInput').value;
+            const dateValue = document.getElementById('dateInput').value;
+            
+            const skipTomorrow = document.getElementById('skipTomorrow').checked;
+            const whatifActive = document.getElementById('whatifToggle').checked;
+
+            if (!dateValue) {
+                setDefaultDate();
+            }
+
+            const date = new Date(dateValue);
+            const result = calculateAttendance(subject, attendance, date, skipTomorrow);
+
+            const mainDisplay = document.getElementById('mainDisplay');
+            const bunkCounter = document.getElementById('bunkCounter');
+            const subjectName = document.getElementById('subjectName');
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+
+            if (!result) {
+                mainDisplay.className = 'main-display neutral';
+                bunkCounter.textContent = '--';
+                subjectName.textContent = '';
+                statusBadge.style.display = 'none';
+                
+                document.getElementById('remainingClasses').textContent = '--';
+                document.getElementById('mustAttend75').textContent = '--';
+                document.getElementById('needFor90').textContent = '--';
+                document.getElementById('currentAttendance').textContent = '--%';
+                
+                document.getElementById('projection').style.display = 'none';
+                calculateWholeDayImpact(null);
+                return;
+            }
+
+            mainDisplay.className = `main-display ${result.isPositive ? 'positive' : 'negative'}`;
+            bunkCounter.textContent = result.safeToBunk;
+            subjectName.textContent = SUBJECTS[subject] || '';
+
+            if (result.isBelow75 || result.safeToBunk < 0) {
+                statusBadge.className = 'status-badge danger';
+                statusBadge.style.display = 'inline-flex';
+                statusText.textContent = 'Below 75% Threshold - Attend Now!';
+            } else if (result.is90Unreachable) {
+                statusBadge.className = 'status-badge warning';
+                statusBadge.style.display = 'inline-flex';
+                statusText.textContent = '90% Target Unreachable';
+            } else if (result.currentAttendance >= 90) {
+                statusBadge.className = 'status-badge success';
+                statusBadge.style.display = 'inline-flex';
+                statusText.textContent = 'Above 90% - Excellent!';
+            } else {
+                statusBadge.style.display = 'none';
+            }
+
+            document.getElementById('remainingClasses').textContent = result.classesRemaining;
+            document.getElementById('mustAttend75').textContent = result.mustAttend75;
+            document.getElementById('needFor90').textContent = result.is90Unreachable ? '∞' : result.mustAttend90;
+            document.getElementById('currentAttendance').textContent = `${result.currentAttendance}%`;
+
+            const mustAttendEl = document.getElementById('mustAttend75');
+            mustAttendEl.className = 'stat-value ' + (result.mustAttend75 === 0 ? 'success' : '');
+
+            const needFor90El = document.getElementById('needFor90');
+            needFor90El.className = 'stat-value ' + (result.is90Unreachable ? 'warning' : '');
+
+            if (whatifActive && skipTomorrow) {
+                document.getElementById('projection').style.display = 'flex';
+                document.getElementById('projectedAttendance').textContent = `${result.projectedAttendance}%`;
+            } else {
+                document.getElementById('projection').style.display = 'none';
+            }
+
+            calculateWholeDayImpact(result);
+        }
+
+        document.getElementById('subjectSelect').addEventListener('change', updateDashboard);
+        document.getElementById('attendanceInput').addEventListener('input', updateDashboard);
+        document.getElementById('dateInput').addEventListener('change', updateDashboard);
+        
+        document.getElementById('whatifToggle').addEventListener('change', function() {
+            document.getElementById('whatifContent').classList.toggle('active', this.checked);
+            updateDashboard();
+        });
+        
+        document.getElementById('skipTomorrow').addEventListener('change', updateDashboard);
+
+        populateSubjectSelect();
+        setDefaultDate();
+
+        // Theme persistence: load, apply, and persist theme in localStorage
+        (function(){
+            const root = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            const initialTheme = savedTheme ? savedTheme : 'dark';
+            root.setAttribute('data-theme', initialTheme);
+            if (themeToggle) themeToggle.checked = (initialTheme === 'light');
+
+            function applyTheme(theme) {
+                root.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('change', function(){
+                    const next = this.checked ? 'light' : 'dark';
+                    applyTheme(next);
+                });
+            }
+        })();
+
+        // Semester Settings + Holidays Calendar logic
+        (function(){
+            // Initialize semester inputs
+            const sStart = document.getElementById('semesterStart');
+            const sEnd = document.getElementById('semesterEnd');
+            const saveBtn = document.getElementById('saveSemesterBtn');
+            const note = document.getElementById('semesterNote');
+
+            function isoDate(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function loadSemesterUI(){
+                const startRaw = localStorage.getItem('semester_start');
+                const endRaw = localStorage.getItem('semester_end');
+                const today = new Date();
+                if (startRaw) sStart.value = startRaw; else sStart.value = isoDate(new Date(today.getFullYear(), today.getMonth(), 1));
+                if (endRaw) sEnd.value = endRaw; else sEnd.value = isoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 105));
+            }
+            loadSemesterUI();
+
+            saveBtn.addEventListener('click', function(){
+                if (sStart.value) localStorage.setItem('semester_start', sStart.value);
+                if (sEnd.value) localStorage.setItem('semester_end', sEnd.value);
+                note.textContent = 'Semester dates saved.';
+                // Update potential dependent displays
+                // No immediate UI re-render required; calculations pull latest weeks on demand
+            });
+        })();
+
+        // Holiday calendar logic
+        (function(){
+            const container = document.getElementById('holidayCalendar');
+            const monthLabel = document.getElementById('calendarMonth');
+            const prevBtn = document.getElementById('calendarPrev');
+            const nextBtn = document.getElementById('calendarNext');
+
+            let currentDate = new Date(); // first day of current view
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+            function getHolidays(){
+                const raw = localStorage.getItem('holidays');
+                try { const arr = raw ? JSON.parse(raw) : []; return new Set(arr); } catch(e){ return new Set(); }
+            }
+            function saveHolidays(set){
+                const arr = Array.from(set);
+                localStorage.setItem('holidays', JSON.stringify(arr));
+            }
+            function formatLabel(d){ const day = String(d.getDate()).padStart(2,'0'); const month = String(d.getMonth()+1).padStart(2,'0'); const year = d.getFullYear(); return `${year}-${month}-${day}`; }
+
+            function render(){
+                container.innerHTML = '';
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const holidays = getHolidays();
+
+                // Configure calendar grid: 7 columns (Sun..Sat)
+                container.style.display = 'grid';
+                container.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                container.style.gridAutoRows = '44px';
+
+                // Weekday headers (Sun..Sat)
+                const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                for (let i = 0; i < 7; i++) {
+                    const w = document.createElement('div');
+                    w.className = 'dow';
+                    w.style.textAlign = 'center';
+                    w.style.fontSize = '0.75rem';
+                    w.style.color = 'var(--text-muted)';
+                    w.textContent = dayNames[i];
+                    container.appendChild(w);
+                }
+
+                // Day cells (6 weeks grid)
+                const totalCells = 42;
+                for (let i = 0; i < totalCells; i++) {
+                    const cellDate = new Date(year, month, i - firstDay + 1);
+                    const cell = document.createElement('div');
+                    const inMonth = cellDate.getMonth() === month;
+                    if (!inMonth) {
+                        cell.className = 'day notinmonth';
+                        container.appendChild(cell);
+                        continue;
+                    }
+                    cell.className = 'day';
+                    cell.textContent = cellDate.getDate();
+                    const f = formatLabel(cellDate);
+                    const isWeekend = (cellDate.getDay() === 0) || (cellDate.getDay() === 6);
+                    if (isWeekend) cell.classList.add('weekend');
+                    if (holidays.has(f)) cell.classList.add('holiday');
+                    cell.setAttribute('data-date', f);
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', function(){
+                        const dateStr = this.getAttribute('data-date');
+                        const s = new Set(holidays);
+                        if (holidays.has(dateStr)) { s.delete(dateStr); } else { s.add(dateStr); }
+                        saveHolidays(s);
+                        render();
+                    });
+                    container.appendChild(cell);
+                }
+
+                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                monthLabel.textContent = `${monthNames[month]} ${year}`;
+            }
+
+            prevBtn.addEventListener('click', function(){ currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()-1, 1); render(); });
+            nextBtn.addEventListener('click', function(){ currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 1); render(); });
+            render();
+        })();
+    </script>
+    <footer class="site-footer" aria-label="Footer">
+        <p>© 2026 Eklavya Chaudhary. All rights reserved.</p>
+    </footer>
+</body>
+</html>
