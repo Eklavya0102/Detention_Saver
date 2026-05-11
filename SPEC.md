@@ -219,3 +219,5 @@ Output: safeToBunk, classesRemaining, neededToAttend75, neededFor90
 8. ✅ All stats update instantly on any input change
 9. ✅ Responsive design works on mobile
 10. ✅ Modern dark theme with accent colors
+
+license : MIT
